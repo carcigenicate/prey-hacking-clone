@@ -3,16 +3,22 @@
             [prey-hacking-clone.collision :as c]))
 
 ; TODO: Should be able to be set externally. Make part of Game?
-(def end-point-radius 20)
-(def player-radius)
+(def end-point-radius 30)
+(def player-radius 15)
 
 (defrecord Game [player boxes end-point])
 
 (defn new-game [starting-position boxes end-point-position]
-  (->Game (ba/->Ball starting-position)))
+  (->Game (ba/new-ball starting-position player-radius)
+          boxes
+          end-point-position))
 
 (defn move-player-by [game x-offset y-offset]
   (update game :player #(ba/move-by % x-offset y-offset)))
+
+(defn move-player-to [game x-target y-target by]
+  (update game :player
+          #(ba/move-towards % [x-target y-target] by)))
 
 (defn collide-with [ball box]
   (if-let [side? (c/colliding-side ball box)]
