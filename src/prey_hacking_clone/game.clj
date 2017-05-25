@@ -4,7 +4,7 @@
 
 ; TODO: Should be able to be set externally. Make part of Game?
 (def end-point-radius 30)
-(def player-radius 15)
+(def player-radius 50)
 
 (defrecord Game [player boxes end-point])
 
@@ -26,6 +26,10 @@
       (#{:left :right} side?) (ba/bounce-x ball)
       (#{:top :bottom} side?) (ba/bounce-y ball))
 
+    (do
+      (println (str "Triggered: " ball "\n" box))
+      ball) ; TODO: Wut?
+    #_
     (throw (IllegalStateException.
              (str "Ball isn't colliding with anything!\n" ball "\n" box)))))
 

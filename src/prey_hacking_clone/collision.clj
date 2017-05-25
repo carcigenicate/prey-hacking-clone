@@ -29,7 +29,6 @@
       (col? l bx) :left
       (col? bx r) :right)))
 
-
 (def test-circle
   (reify
     cP/Circle

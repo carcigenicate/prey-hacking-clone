@@ -1,5 +1,7 @@
 (ns prey-hacking-clone.protocols.rectangle)
 
+; TODO: Change to tl-br representation?
+
 (defprotocol Rectangle
   (left [self])
   (right [self])

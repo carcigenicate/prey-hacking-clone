@@ -1,4 +1,5 @@
-(ns prey-hacking-clone.box)
+(ns prey-hacking-clone.box
+  (:require [prey-hacking-clone.protocols.rectangle :as rP]))
 
 (defrecord Box [top bottom left right])
 
@@ -7,3 +8,10 @@
         [tx ty] top-left-coord]
     (->Box ty (+ ty h)
            tx (+ tx w))))
+
+(extend Box
+  rP/Rectangle
+  {:left :left
+   :right :right
+   :top :top
+   :bottom :bottom})
