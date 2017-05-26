@@ -14,6 +14,8 @@
   (:gen-class))
 
 ; TODO: Enforce the ball being moved via velocity
+; TODO: Ball should be disabled on collision
+; TODO: Input should add to velcoity instead of setting it directly. Ball should "slide".
 
 (def width 1000)
 (def height 1000)
