@@ -3,11 +3,13 @@
             [prey-hacking-clone.protocols.circle :as cP]
             [prey-hacking-clone.protocols.rectangle :as rP]
             [prey-hacking-clone.box :as bo]
+            [prey-hacking-clone.input :as i]
 
             [quil.core :as q]
             [quil.middleware :as qm]
 
-            [helpers.general-helpers :as g])
+            [helpers.general-helpers :as g]
+            [helpers.key-manager :as k])
 
   (:gen-class))
 
@@ -19,11 +21,18 @@
 (def ball-speed 10)
 
 (def rand-gen (g/new-rand-gen 99))
-#_
-(defn random-boxes [n-boxes min-length max-length min-height max-height rand-gen]
-  (let []
-    (for [n (range n-boxes)]
-      (bo/->Box (g/random-double 0 width)))))
+
+(defrecord State [game key-manager])
+
+(defn new-state []
+  (->State (ga/new-game [(/ width 2) (/ height 2)] [] [0 0])
+           (k/new-key-manager)))
+
+(defn apply-keys [state]
+  (update state :game
+          #(k/reduce-pressed-keys (:key-manager state)
+             (fn [acc key] (i/keyboard-input-handler acc key ball-speed))
+             %)))
 
 (defn draw-box [rect]
   (let [{l :left r :right t :top b :bottom} (rP/boundary-map rect)]
@@ -31,26 +40,35 @@
 
 (defn setup-state []
   (let [box (bo/->Box 300 500 300 500)]
-    (-> (ga/new-game [(/ width 2) (/ height 2)] [box] [0 0])
-        (assoc-in [:player :velocity] [2 5]))))
+    (-> (new-state)
+      (update-in [:game :boxes] #(conj % box)))))
 
-(defn update-state [game]
+(defn update-state [state]
+  #_
   (when (zero? (rem (q/frame-count) 30))
     (println (-> game :player :velocity)))
 
   (let [[mx my] [(q/mouse-x) (q/mouse-y)]]
-    (-> game
-      (ga/move-player-to mx my ball-speed)
-      (ga/resolve-collisions))))
+    (-> state
+      (apply-keys)
+      (update :game #(ga/resolve-collisions %)))))
 
-(defn draw-state [game]
+(defn draw-state [state]
   (q/background 200 200 200)
 
-  (let [{{[bx by] :position r :radius} :player boxes :boxes} game]
-    (q/ellipse bx by r r)
+  (let [game (:game state)
+        {{[bx by] :position r :radius} :player boxes :boxes} game
+        diam (* r 2)]
+    (q/ellipse bx by diam diam)
 
     (doseq [box boxes]
       (draw-box box))))
+
+(defn key-press-handler [state event]
+  (update state :key-manager #(k/press-key % (:raw-key event))))
+
+(defn key-release-handler [state]
+  (update state :key-manager #(k/release-key % (q/raw-key))))
 
 (defn -main []
   (q/defsketch Prey-Hacking
@@ -59,6 +77,9 @@
     :setup setup-state
     :update update-state
     :draw draw-state
+
+    :key-pressed key-press-handler
+    :key-released key-release-handler
 
     :middleware [qm/fun-mode]))
 

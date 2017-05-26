@@ -1,6 +1,7 @@
 (ns prey-hacking-clone.game
   (:require [prey-hacking-clone.ball :as ba]
-            [prey-hacking-clone.collision :as c]))
+            [prey-hacking-clone.collision :as c]
+            [prey-hacking-clone.protocols.circle :as cP]))
 
 ; TODO: Should be able to be set externally. Make part of Game?
 (def end-point-radius 30)
@@ -21,6 +22,9 @@
           #(ba/move-towards % [x-target y-target] by)))
 
 (defn collide-with [ball box]
+  (print "-") (flush)
+  ball
+  #_
   (if-let [side? (c/colliding-side ball box)]
     (cond
       (#{:left :right} side?) (ba/bounce-x ball)

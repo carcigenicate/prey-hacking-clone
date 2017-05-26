@@ -1,7 +1,9 @@
 (ns prey-hacking-clone.ball
   (:require [prey-hacking-clone.protocols.circle :as c]))
 
-(defrecord Ball [position velocity radius statuses])
+(defrecord Ball [position velocity radius statuses]
+  Object
+  (toString [self] (str (into {} self))))
 
 (defn new-ball [position radius]
   (->Ball position [0 0] radius {}))
@@ -29,8 +31,16 @@
 (defn set-status [ball status-key status-value]
   (assoc-in ball [:statuses status-key] status-value))
 
-(defn update-status [ball status-key f]
-  (update-in ball [:statuses status-key] f))
+(defn status [ball status-key]
+  (get-in ball [:statuses status-key]))
+
+(defn update-status
+  "Updates a given status of the ball. If f returns nil, the status will be removed from the ball."
+  [ball status-key f]
+  (let [new-status (f (status ball status-key))]
+    (if (nil? new-status)
+      (update ball :status #(dissoc % status-key))
+      (assoc-in ball [:status status-key] new-status))))
 
 (defn offsets-to-target [position target move-by]
   (let [[x-off y-off] (mapv - target position)

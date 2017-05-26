@@ -1,7 +1,9 @@
 (ns prey-hacking-clone.box
   (:require [prey-hacking-clone.protocols.rectangle :as rP]))
 
-(defrecord Box [top bottom left right])
+(defrecord Box [top bottom left right]
+  Object
+  (toString [self] (str (into {} self))))
 
 (defn new-box-tl [top-left-coord box-dimensions]
   (let [[w h] box-dimensions
