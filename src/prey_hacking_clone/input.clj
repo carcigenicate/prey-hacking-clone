@@ -2,7 +2,7 @@
   (:require [prey-hacking-clone.game :as ga]))
 
 (defn keyboard-input-handler [state key ball-speed]
-  (let [move-by #(ga/move-player-by state % %2)]
+  (let [move-by #(ga/set-player-velocity state % %2)]
     (case key
       \w (move-by 0 (- ball-speed))
       \s (move-by 0 ball-speed)

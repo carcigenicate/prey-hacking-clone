@@ -1,5 +1,8 @@
 (ns prey-hacking-clone.ball
-  (:require [prey-hacking-clone.protocols.circle :as c]))
+  (:require [prey-hacking-clone.protocols.circle :as c]
+            [prey-hacking-clone.number-helpers :as nh]
+
+            [helpers.general-helpers :as g]))
 
 (defrecord Ball [position velocity radius statuses]
   Object
@@ -13,6 +16,10 @@
           (fn [[x y]] [(+ x x-offset)
                        (+ y y-offset)])))
 
+(defn move-with-velocity [ball]
+  (let [[vx vy] (:velocity ball)]
+      (move-by ball vx vy)))
+
 (defn set-velocity [ball x-velocity y-velocity]
   (assoc ball :velocity
               [x-velocity y-velocity]))
@@ -21,6 +28,30 @@
   (update ball :velocity
           (fn [[x y]] [(+ x x-velocity-offset)
                        (+ y y-velocity-offset)])))
+
+(defn reduce-velocity-by
+  "Reduces the velocity of the ball in each dimension toward 0."
+  [ball x-friction y-friction]
+  (update ball :velocity
+          (fn [[xv yv]]
+            [(nh/toward-zero-by xv x-friction)
+             (nh/toward-zero-by yv y-friction)])))
+
+; TODO: EWW!
+#_
+(defn reduce-velocity-by
+  "Reduces the velocity of the ball in each dimension toward 0."
+  [ball x-friction y-friction]
+  (let [sig #(Math/signum ^double %)
+        non-z-clamp #(g/clamp % 0 Double/MAX_VALUE)]
+    (update ball :velocity
+            (fn [[xv yv :as vel]]
+              (let [sigs (map sig vel)
+                    [i-x-sig i-y-sig] (map - sigs)
+                    x-fric (* i-x-sig x-friction)
+                    y-fric (* i-y-sig y-friction)]
+                [(non-z-clamp (- xv x-fric))
+                 (non-z-clamp (- yv y-fric))])))))
 
 (defn bounce-x [ball]
   (update-in ball [:velocity 0] -))

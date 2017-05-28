@@ -9,18 +9,20 @@
             [quil.middleware :as qm]
 
             [helpers.general-helpers :as g]
-            [helpers.key-manager :as k])
+            [helpers.key-manager :as k]
+            [prey-hacking-clone.ball :as ba])
 
   (:gen-class))
 
 ; TODO: Enforce the ball being moved via velocity
 ; TODO: Ball should be disabled on collision
-; TODO: Input should add to velcoity instead of setting it directly. Ball should "slide".
+; TODO: Input should add to velcoity instead of setting it directly.
+;        Should then be clamped to some max-velocity
 
 (def width 1000)
 (def height 1000)
 
-(def ball-speed 10)
+(def ball-speed 1)
 
 (def rand-gen (g/new-rand-gen 99))
 
@@ -50,10 +52,13 @@
   (when (zero? (rem (q/frame-count) 30))
     (println (-> game :player :velocity)))
 
-  (let [[mx my] [(q/mouse-x) (q/mouse-y)]]
+  (let [[mx my] [(q/mouse-x) (q/mouse-y)]
+        fric (* ball-speed 0.5)]
     (-> state
       (apply-keys)
-      (update :game #(ga/resolve-collisions %)))))
+      (update :game ga/move-player-with-velocity)
+      (update-in [:game :player] #(ba/reduce-velocity-by % fric fric))
+      (update :game ga/resolve-collisions))))
 
 (defn draw-state [state]
   (q/background 200 200 200)
