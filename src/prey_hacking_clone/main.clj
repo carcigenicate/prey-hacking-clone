@@ -16,10 +16,10 @@
 
 ; TODO: Enforce the ball being moved via velocity
 ; TODO: Ball should be disabled on collision
-; TODO: Input should add to velcoity instead of setting it directly.
+; TODO: Input should add to velocity instead of setting it directly.
 ;        Should then be clamped to some max-velocity
 
-(def width 1000)
+(def width 1500)
 (def height 1000)
 
 (def ball-speed 1)
@@ -29,13 +29,13 @@
 (defrecord State [game key-manager])
 
 (defn new-state []
-  (->State (ga/new-game [(/ width 2) (/ height 2)] [] [0 0])
+  (->State (ga/new-game [(* width 0.4) (* height 0.8)] [] [0 0])
            (k/new-key-manager)))
 
 (defn apply-keys [state]
   (update state :game
           #(k/reduce-pressed-keys (:key-manager state)
-             (fn [acc key] (i/keyboard-input-handler acc key ball-speed))
+             (fn [acc key] (i/keyboard-input-handler acc key))
              %)))
 
 (defn draw-box [rect]
@@ -43,22 +43,29 @@
     (q/rect l t (- r l) (- b t))))
 
 (defn setup-state []
-  (let [box (bo/->Box 300 500 300 500)]
+  (q/frame-rate 60)
+
+  (let [boxes [(bo/->Box 300 700 300 700)
+               (bo/->Box 300 700 900 1100)]]
     (-> (new-state)
-      (update-in [:game :boxes] #(conj % box)))))
+      (update-in [:game :boxes] #(concat % boxes)))))
+
+(defn update-game-state [state]
+  (update state :game
+    #(-> %
+         (ga/move-player-with-velocity)
+         (ga/apply-friction)
+         (ga/resolve-collisions))))
 
 (defn update-state [state]
   #_
   (when (zero? (rem (q/frame-count) 30))
     (println (-> game :player :velocity)))
 
-  (let [[mx my] [(q/mouse-x) (q/mouse-y)]
-        fric (* ball-speed 0.5)]
+  (let [[mx my] [(q/mouse-x) (q/mouse-y)]]
     (-> state
       (apply-keys)
-      (update :game ga/move-player-with-velocity)
-      (update-in [:game :player] #(ba/reduce-velocity-by % fric fric))
-      (update :game ga/resolve-collisions))))
+      (update-game-state))))
 
 (defn draw-state [state]
   (q/background 200 200 200)

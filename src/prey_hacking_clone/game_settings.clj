@@ -1,12 +1,12 @@
 (ns prey-hacking-clone.game-settings
   (:require [prey-hacking-clone.number-helpers :as nh]))
 
-(defrecord Settings [input-velocity friction max-velocity player-radius])
+(defrecord Settings [player-velocity friction max-velocity player-radius])
 
 (def default-settings
   (map->Settings
-    {:input-velocity 5
-     :friction 1
+    {:player-velocity 3
+     :friction 0
      :max-velocity 5
      :player-radius 30}))
 
